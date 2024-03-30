@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using Schema.NET;
@@ -84,6 +85,20 @@ namespace Test.E2e
     {
         protected HtmlPage(IPage page) : base(page)
         {
+        }
+
+        public async Task Temp()
+        {
+            BlogPosting blogPosting = await GetStructureData<BlogPosting>();
+            System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions();
+            options.AllowTrailingCommas = true;
+            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+            options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            options.WriteIndented = true;
+
+            string title = await _Page.TitleAsync();
+            string structureDataAsJson = blogPosting.ToString(options);
+            Dictionary<string, string> metatags = await GetMetaTags();
         }
 
         public async Task<T> GetStructureData<T>()

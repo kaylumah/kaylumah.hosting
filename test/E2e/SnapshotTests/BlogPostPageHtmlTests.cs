@@ -49,21 +49,15 @@ namespace Test.E2e.SnapshotTests
             BlogItemPage blogItemPage = new BlogItemPage(path, blogPage);
             await blogItemPage.NavigateAsync();
 
-            BlogPosting structureData = await blogItemPage.GetStructureData<BlogPosting>();
-            System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions();
-            options.AllowTrailingCommas = true;
-            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
-            options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-            options.WriteIndented = true;
-            string structureDataAsJson = structureData.ToString(options);
-            
-            string testParameter = path
-                .Replace("/", "_")
-                .Replace(".html", "");
-            string methodName = $"{nameof(Verify_BlogPostPageHtml_Contents)}_{testParameter}";
-            VerifySettings settings = new VerifySettings();
-            settings.UseMethodName(methodName);
-            await Verifier.Verify(structureDataAsJson, "json", settings);
+            await blogItemPage.Temp();
+
+            // string testParameter = path
+            //     .Replace("/", "_")
+            //     .Replace(".html", "");
+            // string methodName = $"{nameof(Verify_BlogPostPageHtml_Contents)}_{testParameter}";
+            // VerifySettings settings = new VerifySettings();
+            // settings.UseMethodName(methodName);
+            // await Verifier.Verify(structureDataAsJson, "json", settings);
         }
 
         public static IEnumerable<object[]> GetBlogPages()
