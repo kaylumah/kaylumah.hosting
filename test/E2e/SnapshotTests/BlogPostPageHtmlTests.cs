@@ -43,7 +43,7 @@ namespace Test.E2e.SnapshotTests
 
         [Theory]
         [MemberData(nameof(GetBlogPages))]
-        public async Task Verify_BlogPostPageHtml_Contents2(string path)
+        public async Task Verify_BlogPostPageHtml_StructureData(string path)
         {
             IPage blogPage = await _DesktopFixture.GetPage();
             BlogItemPage blogItemPage = new BlogItemPage(path, blogPage);
