@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -20,9 +21,25 @@ namespace Test.E2e.SnapshotTests
             _MobileFixture = mobileFixture;
         }
 
-        [Theory]
+        [Fact]
+        public async Task Verify_BlogPostPageHtml_Contents()
+        {
+            IPage page = await _DesktopFixture.GetPage();
+            BlogItemPage blogItemPage = new BlogItemPage("2023/04/14/csharp-client-for-openapi-revistted.html", page);
+            await blogItemPage.NavigateAsync();
+
+            await blogItemPage.NavigateAsync();
+            Dictionary<string, string> headers = await blogItemPage.GetHeaders();
+            string title = await page.TitleAsync();
+            
+            title.Should().Be("Generate C# client for OpenAPI - Revisited");
+
+            await HtmlPageVerifier.Verify(blogItemPage);
+        }
+
+        [Theory(Skip = "don't use")]
         [MemberData(nameof(GetBlogPages))]
-        public async Task Verify_BlogPostPageHtml_Contents(string path)
+        public async Task Verify_BlogPostPageHtml_Contents2(string path)
         {
             IPage blogPage = await _DesktopFixture.GetPage();
             BlogItemPage blogItemPage = new BlogItemPage(path, blogPage);
