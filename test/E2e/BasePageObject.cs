@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
+using Schema.NET;
 
 #pragma warning disable CS3001 // Argument type is not CLS-compliant
 #pragma warning disable CS3003 // Type is not CLS-compliant
@@ -81,6 +84,17 @@ namespace Test.E2e
     {
         protected HtmlPage(IPage page) : base(page)
         {
+        }
+
+        public async Task<T> GetStructureData<T>()
+        {
+            ILocator metaTagNameLocator = _Page.Locator("//script[@type='application/ld+json']");
+            IReadOnlyList<ILocator> metaNameTags = await metaTagNameLocator.AllAsync();
+            Debug.Assert(metaNameTags.Count == 1);
+            ILocator metaTag = metaNameTags.Single();
+            string json = await metaTag.InnerTextAsync();
+            T result = SchemaSerializer.DeserializeObject<T>(json);
+            return result;
         }
 
         public async Task<Dictionary<string, string>> GetMetaTags()

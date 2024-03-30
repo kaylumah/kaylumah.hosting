@@ -2,9 +2,13 @@
 // See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Playwright;
+using Schema.NET;
+using VerifyTests;
+using VerifyXunit;
 using Xunit;
 
 #pragma warning disable CS3016
@@ -37,18 +41,29 @@ namespace Test.E2e.SnapshotTests
             await HtmlPageVerifier.Verify(blogItemPage);
         }
 
-        [Theory(Skip = "don't use")]
+        [Theory]
         [MemberData(nameof(GetBlogPages))]
         public async Task Verify_BlogPostPageHtml_Contents2(string path)
         {
             IPage blogPage = await _DesktopFixture.GetPage();
             BlogItemPage blogItemPage = new BlogItemPage(path, blogPage);
             await blogItemPage.NavigateAsync();
+
+            BlogPosting structureData = await blogItemPage.GetStructureData<BlogPosting>();
+            System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions();
+            options.AllowTrailingCommas = true;
+            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+            options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            options.WriteIndented = true;
+            string structureDataAsJson = structureData.ToString(options);
+            
             string testParameter = path
                 .Replace("/", "_")
                 .Replace(".html", "");
             string methodName = $"{nameof(Verify_BlogPostPageHtml_Contents)}_{testParameter}";
-            await HtmlPageVerifier.Verify(blogItemPage, methodName);
+            VerifySettings settings = new VerifySettings();
+            settings.UseMethodName(methodName);
+            await Verifier.Verify(structureDataAsJson, "json", settings);
         }
 
         public static IEnumerable<object[]> GetBlogPages()
