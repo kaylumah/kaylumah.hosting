@@ -26,12 +26,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set TimeZone
-      uses: hoang-rio/set-timezone@v1.4
-      with:
-        timezoneLinux: "Europe/Amsterdam"
-        timezoneMacos: "Europe/Amsterdam"
-        timezoneWindows: "W. Europe Standard Time"
+    # - name: Set TimeZone
+    #   uses: hoang-rio/set-timezone@v1.4
+    #   with:
+    #     timezoneLinux: "Europe/Amsterdam"
+    #     timezoneMacos: "Europe/Amsterdam"
+    #     timezoneWindows: "W. Europe Standard Time"
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
