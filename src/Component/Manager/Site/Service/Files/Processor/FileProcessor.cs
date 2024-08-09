@@ -172,24 +172,26 @@ namespace Kaylumah.Ssg.Manager.Site.Service.Files.Processor
             }
 
             criteria.FileName = fileInfo.Name;
-            ParsedFile<FileMetaData> response = Parse(criteria);
+            FileMetaData fileMeta = Parse(criteria);
 
-            FileMetaData fileMeta = response.FrontMatter;
-            string fileContents = response.Content;
-
-            IContentPreprocessorStrategy? preprocessor = _PreprocessorStrategies.SingleOrDefault(x => x.ShouldExecute(fileInfo));
+            IContentPreprocessorStrategy? preprocessor = _PreprocessorStrategies.SingleOrDefault(x => x.ShouldExecute(fileMeta));
             if (preprocessor != null)
             {
-                fileContents = preprocessor.Execute(fileContents);
+                preprocessor.Execute(fileMeta);
+            }
+
+            if (string.IsNullOrEmpty(fileMeta.Content))
+            {
+                fileMeta.Content = fileMeta.Raw;
             }
 
             Encoding encoding = fileStream.DetermineEncoding();
-            byte[] fileBytes = encoding.GetBytes(fileContents);
+            byte[] fileBytes = encoding.GetBytes(fileMeta.Content);
             BinaryFile fileResult = new TextFile(fileMeta, fileBytes, encoding.WebName);
             return fileResult;
         }
 
-        ParsedFile<FileMetaData> Parse(MetadataCriteria criteria)
+        FileMetaData Parse(MetadataCriteria criteria)
         {
             ParsedFile<FileMetaData> result = _MetadataProvider.Retrieve<FileMetaData>(criteria.Content);
             if (result.FrontMatter == null)
@@ -215,9 +217,12 @@ namespace Kaylumah.Ssg.Manager.Site.Service.Files.Processor
 
             string lowerName = nameof(result.FrontMatter.OutputLocation).ToLower(CultureInfo.InvariantCulture);
             result.FrontMatter.Remove(lowerName);
-            result.FrontMatter.Uri = outputLocation;
 
-            return result;
+            result.FrontMatter.Uri = outputLocation;
+            result.FrontMatter.SourceFileName = criteria.FileName;
+            result.FrontMatter.Raw = result.Content;
+
+            return result.FrontMatter;
         }
 
         string RetrieveExtension(string fileName)
